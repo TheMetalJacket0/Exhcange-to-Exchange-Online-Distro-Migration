@@ -1,4 +1,5 @@
-﻿$group = 
+﻿Connect-ExchangeOnline
+# $group =  null
 $CSVExport = ".\ExportedGroups"
 
 
@@ -6,17 +7,18 @@ $CSVExport = ".\ExportedGroups"
 $oldDistro = get-distributiongroup $group
 $oldDistroName = [sting]$oldDistro.name
 $oldDistroDisplay = [string]$oldDistro.displayname
+$oldDistroAlias = [string]$oldDistro.Alias
 $oldDistroSMTP = [string]$oldDistro.primarysmtpaddress
-$oldDistroMemeber = (get-distrobutiongroupmember $oldDistroName).name
+$oldDistroMember = (get-distrobutiongroupmember $oldDistroName).name
 
 #creating new Distro Group
-New-distributiongroup 
-	-Name 
-	-Alias 
-	-DisplayName 
-	-ManagedBy 
-	-Members 
-	-PrimarySMTPAddress 
+New-distributiongroup '
+	-Name "Online-$oldDistroName" '
+	-Alias "Online-$oldDistroAlias" '
+	-DisplayName "Online-$oldDistroDisplay" '
+	-ManagedBy $oldDistro.ManagedBy '
+	-Members $oldDistroMember '
+	-PrimarySMTPAddress "Online-$oldDistroSMTP" 
 
 #writing groups to .csv
 "EmailAddress" > "$CSVExport\$group.csv"
