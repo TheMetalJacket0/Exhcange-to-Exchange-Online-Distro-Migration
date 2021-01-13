@@ -1,24 +1,33 @@
-﻿Connect-ExchangeOnline
-# $group =  null
+﻿$group = ""
 $CSVExport = ".\ExportedGroups"
+
+
 
 
 #Grabs Old Distro Info
 $oldDistro = get-distributiongroup $group
-$oldDistroName = [sting]$oldDistro.name
+$oldDistroName = $oldDistro.name
 $oldDistroDisplay = [string]$oldDistro.displayname
 $oldDistroAlias = [string]$oldDistro.Alias
 $oldDistroSMTP = [string]$oldDistro.primarysmtpaddress
-$oldDistroMember = (get-distrobutiongroupmember $oldDistroName).name
+$oldDistroMember = (Get-DistributionGroupMember $oldDistroName).name
 
 #creating new Distro Group
-New-distributiongroup '
-	-Name "Online-$oldDistroName" '
-	-Alias "Online-$oldDistroAlias" '
-	-DisplayName "Online-$oldDistroDisplay" '
-	-ManagedBy $oldDistro.ManagedBy '
-	-Members $oldDistroMember '
+Write-Host "Creating New group for $oldDistroName"
+New-distributiongroup `
+	-Name "Online-$oldDistroName" `
+	-Alias "Online-$oldDistroAlias" `
+	-DisplayName "Online-$oldDistroDisplay" `
+	-Members $oldDistroMember `
 	-PrimarySMTPAddress "Online-$oldDistroSMTP" 
+
+#creating Path for groups
+        If(!(Test-Path -Path $CSVExport )){
+            Write-Host "Creating Directory: $CSVExport"
+            New-Item -ItemType directory -Path $CSVExport
+        }
+ Write-Host "Creating Directory: $CSVExport"
+ 
 
 #writing groups to .csv
 "EmailAddress" > "$CSVExport\$group.csv"
@@ -29,12 +38,12 @@ $oldDistro.EmailAddresses >> "$CSVExport\$group.csv"
 #setting parameter for New Online Distro
 
 Set-DistributionGroup `
-            -Identity "Cloud-$oldDistroName" `
+            -Identity "Online-$oldDistroName" `
             -AcceptMessagesOnlyFromSendersOrMembers $oldDistro.AcceptMessagesOnlyFromSendersOrMembers `
             -RejectMessagesFromSendersOrMembers $oldDistro.RejectMessagesFromSendersOrMembers `
 
 Set-DistributionGroup `
-    -Identity "Cloud-$oldDistroName" `
+    -Identity "Online-$oldDistroName" `
     -AcceptMessagesOnlyFrom $oldDistro.AcceptMessagesOnlyFrom `
     -AcceptMessagesOnlyFromDLMembers $oldDistro.AcceptMessagesOnlyFromDLMembers `
     -BypassModerationFromSendersOrMembers $oldDistro.BypassModerationFromSendersOrMembers `
